@@ -189,28 +189,43 @@ router.post('/archive', validateConvoAccess, async (req, res) => {
 const MAX_CONVO_TITLE_LENGTH = 1024;
 
 /**
- * Updates a conversation's title.
+ * Updates lightweight conversation metadata.
+ * Currently supports title updates and avatar/bridge mode toggling.
+ *
  * @route POST /update
  * @param {string} req.body.arg.conversationId - The conversation ID to update.
- * @param {string} req.body.arg.title - The new title for the conversation.
+ * @param {string} [req.body.arg.title] - The new title for the conversation.
+ * @param {boolean} [req.body.arg.avatarMode] - Whether avatar/bridge mode is enabled for the conversation.
  * @returns {object} 201 - The updated conversation object.
  */
 router.post('/update', validateConvoAccess, async (req, res) => {
-  const { conversationId, title } = req.body?.arg ?? {};
+  const { conversationId, title, avatarMode } = req.body?.arg ?? {};
 
   if (!conversationId) {
     return res.status(400).json({ error: 'conversationId is required' });
   }
 
-  if (title === undefined) {
-    return res.status(400).json({ error: 'title is required' });
+  const update = {};
+
+  if (title !== undefined) {
+    if (typeof title !== 'string') {
+      return res.status(400).json({ error: 'title must be a string' });
+    }
+
+    update.title = title.trim().slice(0, MAX_CONVO_TITLE_LENGTH);
   }
 
-  if (typeof title !== 'string') {
-    return res.status(400).json({ error: 'title must be a string' });
+  if (avatarMode !== undefined) {
+    if (typeof avatarMode !== 'boolean') {
+      return res.status(400).json({ error: 'avatarMode must be a boolean' });
+    }
+
+    update.avatarMode = avatarMode;
   }
 
-  const sanitizedTitle = title.trim().slice(0, MAX_CONVO_TITLE_LENGTH);
+  if (Object.keys(update).length === 0) {
+    return res.status(400).json({ error: 'No valid fields provided for update' });
+  }
 
   try {
     const dbResponse = await db.saveConvo(
@@ -219,7 +234,7 @@ router.post('/update', validateConvoAccess, async (req, res) => {
         isTemporary: req?.body?.isTemporary,
         interfaceConfig: req?.config?.interfaceConfig,
       },
-      { conversationId, title: sanitizedTitle },
+      { conversationId, ...update },
       { context: `POST /api/convos/update ${conversationId}` },
     );
     res.status(201).json(dbResponse);

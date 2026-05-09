@@ -834,6 +834,14 @@ export const tConversationSchema = z.object({
   web_search: z.boolean().optional(),
   /* disable streaming */
   disableStreaming: z.boolean().optional(),
+  /*
+  Optional boolean field for enabling avatar/bridge mode
+  on a per-conversation basis.
+  true  = route responses through avatar pipeline
+  false = normal LibreChat behavior
+  undefined = feature not configured / fallback to default behavior
+  */
+  avatarMode: z.boolean().optional(),
   /* assistant */
   assistant_id: z.string().optional(),
   /* agents */

@@ -277,9 +277,15 @@ export type TAgentApiKeyListResponse = {
   keys: TAgentApiKeyListItem[];
 };
 
+/*
+Partial conversation update payload.
+Allows updating lightweight conversation metadata
+without replacing the full conversation object.
+*/
 export type TUpdateConversationRequest = {
   conversationId: string;
-  title: string;
+  title?: string;
+  avatarMode?: boolean;
 };
 
 export type TUpdateConversationResponse = TConversation;

@@ -12,6 +12,7 @@ import AddMultiConvo from './AddMultiConvo';
 import { useHasAccess } from '~/hooks';
 import { cn } from '~/utils';
 import store from '~/store';
+import AvatarModeToggle from './AvatarModeToggle';
 
 const defaultInterface = getConfigDefaults().interface;
 
@@ -71,6 +72,7 @@ function Header() {
 
         {!isSmallScreen && (
           <div className="flex items-center gap-2">
+            <AvatarModeToggle />
             <ExportAndShareMenu
               isSharedButtonEnabled={startupConfig?.sharedLinksEnabled ?? false}
             />

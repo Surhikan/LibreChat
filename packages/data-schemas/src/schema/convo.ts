@@ -33,6 +33,11 @@ const convoSchema: Schema<IConversation> = new Schema(
     files: {
       type: [String],
     },
+    /* Enables avatar output pipeline for this conversation */
+    avatarMode: {
+      type: Boolean,
+      default: false,
+    },
     expiredAt: {
       type: Date,
     },
