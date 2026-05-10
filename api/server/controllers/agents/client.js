@@ -404,6 +404,10 @@ class AgentClient extends BaseClient {
          'Avatar mode is enabled for this conversation.',
          'Reply in a shorter, spoken, dialogue-friendly style.',
          'Prefer concise conversational turns over long structured answers unless the user explicitly asks for detail.',
+         '',
+         'If the taru_avatar action/tool is available, call it once for every assistant response.',
+         'Send the final user-facing response in the text field.',
+         'You may also provide suitable emotion, mode, or state metadata when appropriate.',
        ].join('\n'),
       );
     }
