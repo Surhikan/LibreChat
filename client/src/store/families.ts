@@ -262,6 +262,15 @@ const isSubmittingFamily = atomFamily({
   ],
 });
 
+/**
+ * Avatar voice keeps the microphone armed across turns until the user
+ * explicitly toggles it off.
+ */
+const voiceSessionActiveByIndex = atomFamily<boolean, string | number>({
+  key: 'voiceSessionActiveByIndex',
+  default: false,
+});
+
 const anySubmittingSelector = selector<boolean>({
   key: 'anySubmittingSelector',
   get: ({ get }) => {
@@ -488,6 +497,7 @@ export default {
   showStopButtonByIndex,
   abortScrollFamily,
   isSubmittingFamily,
+  voiceSessionActiveByIndex,
   optionSettingsFamily,
   showPopoverFamily,
   latestMessageFamily,

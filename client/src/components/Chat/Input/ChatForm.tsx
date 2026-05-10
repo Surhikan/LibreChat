@@ -368,6 +368,7 @@ const ChatForm = memo(function ChatForm({
               <div className="mx-auto flex" />
               {SpeechToText && (
                 <AudioRecorder
+                  index={index}
                   methods={methods}
                   ask={submitMessage}
                   textAreaRef={textAreaRef}
