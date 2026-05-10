@@ -20,7 +20,10 @@ const useSpeechToTextBrowser = (
 
   const lastTranscript = useRef<string | null>(null);
   const lastInterim = useRef<string | null>(null);
+  const ignoredFinalTranscript = useRef<string | null>(null);
+  const ignoredInterimTranscript = useRef<string | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>();
+  const clearIgnoredRef = useRef<NodeJS.Timeout | null>();
   const [autoSendText] = useRecoilState(store.autoSendText);
   const [languageSTT] = useRecoilState<string>(store.languageSTT);
   const [autoTranscribeAudio] = useRecoilState<boolean>(store.autoTranscribeAudio);
@@ -40,6 +43,10 @@ const useSpeechToTextBrowser = (
       return;
     }
 
+    if (ignoredInterimTranscript.current === interimTranscript) {
+      return;
+    }
+
     if (lastInterim.current === interimTranscript) {
       return;
     }
@@ -50,6 +57,10 @@ const useSpeechToTextBrowser = (
 
   useEffect(() => {
     if (finalTranscript == null || finalTranscript === '') {
+      return;
+    }
+
+    if (ignoredFinalTranscript.current === finalTranscript) {
       return;
     }
 
@@ -78,8 +89,14 @@ const useSpeechToTextBrowser = (
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
+    if (clearIgnoredRef.current) {
+      clearTimeout(clearIgnoredRef.current);
+      clearIgnoredRef.current = null;
+    }
     lastTranscript.current = null;
     lastInterim.current = null;
+    ignoredFinalTranscript.current = finalTranscript || null;
+    ignoredInterimTranscript.current = interimTranscript || null;
     resetTranscript();
   };
 
@@ -103,6 +120,11 @@ const useSpeechToTextBrowser = (
     }
 
     clearTranscriptState();
+    clearIgnoredRef.current = setTimeout(() => {
+      ignoredFinalTranscript.current = null;
+      ignoredInterimTranscript.current = null;
+      clearIgnoredRef.current = null;
+    }, 500);
     SpeechRecognition.startListening({
       language: languageSTT,
       continuous: autoTranscribeAudio,

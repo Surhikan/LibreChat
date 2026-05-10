@@ -26,6 +26,7 @@ export default memo(function AudioRecorder({
   const { speechToTextEndpoint } = useGetAudioSettings();
 
   const existingTextRef = useRef<string>('');
+  const acceptingBrowserTranscriptRef = useRef(false);
   const isSubmittingRef = useRef(isSubmitting);
   isSubmittingRef.current = isSubmitting;
 
@@ -52,6 +53,7 @@ export default memo(function AudioRecorder({
         ask({ text: finalText });
         reset({ text: '' });
         existingTextRef.current = '';
+        acceptingBrowserTranscriptRef.current = false;
       }
     },
     [ask, reset, showToast, localize, speechToTextEndpoint],
@@ -59,6 +61,10 @@ export default memo(function AudioRecorder({
 
   const setText = useCallback(
     (text: string) => {
+      if (!isExternalSTT(speechToTextEndpoint) && !acceptingBrowserTranscriptRef.current) {
+        return;
+      }
+
       let newText = text;
       if (isExternalSTT(speechToTextEndpoint)) {
         /** For external STT, the text comes as a complete transcription, so append to existing */
@@ -87,6 +93,7 @@ export default memo(function AudioRecorder({
     }
 
     existingTextRef.current = '';
+    acceptingBrowserTranscriptRef.current = false;
     if (isListening) {
       stopRecordingRef.current();
     }
@@ -99,6 +106,7 @@ export default memo(function AudioRecorder({
 
   const handleStartRecording = async () => {
     existingTextRef.current = getValues('text') || '';
+    acceptingBrowserTranscriptRef.current = !isExternalSTT(speechToTextEndpoint);
     startRecording();
   };
 
