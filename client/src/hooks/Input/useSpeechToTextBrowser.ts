@@ -73,7 +73,17 @@ const useSpeechToTextBrowser = (
     };
   }, [setText, onTranscriptionComplete, resetTranscript, finalTranscript, autoSendText]);
 
-  const toggleListening = () => {
+  const clearTranscriptState = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    lastTranscript.current = null;
+    lastInterim.current = null;
+    resetTranscript();
+  };
+
+  const startListening = () => {
     if (!browserSupportsSpeechRecognition) {
       showToast({
         message: sttExternal
@@ -92,14 +102,24 @@ const useSpeechToTextBrowser = (
       return;
     }
 
+    clearTranscriptState();
+    SpeechRecognition.startListening({
+      language: languageSTT,
+      continuous: autoTranscribeAudio,
+    });
+  };
+
+  const stopListening = () => {
+    SpeechRecognition.stopListening();
+  };
+
+  const toggleListening = () => {
     if (isListening === true) {
-      SpeechRecognition.stopListening();
-    } else {
-      SpeechRecognition.startListening({
-        language: languageSTT,
-        continuous: autoTranscribeAudio,
-      });
+      stopListening();
+      return;
     }
+
+    startListening();
   };
 
   useEffect(() => {
@@ -116,8 +136,9 @@ const useSpeechToTextBrowser = (
   return {
     isListening,
     isLoading: false,
-    startRecording: toggleListening,
-    stopRecording: toggleListening,
+    startRecording: startListening,
+    stopRecording: stopListening,
+    resetTranscript: clearTranscriptState,
   };
 };
 

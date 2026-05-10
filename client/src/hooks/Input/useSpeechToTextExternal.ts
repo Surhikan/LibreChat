@@ -275,6 +275,7 @@ const useSpeechToTextExternal = (
     isListening,
     externalStopRecording,
     externalStartRecording,
+    resetTranscript: () => {},
     isLoading: isProcessing,
   };
 };

@@ -1,4 +1,4 @@
-import { memo, useCallback, useRef } from 'react';
+import { memo, useCallback, useEffect, useRef } from 'react';
 import { MicOff } from 'lucide-react';
 import { useToastContext, TooltipAnchor, ListeningIcon, Spinner } from '@librechat/client';
 import { useLocalize, useSpeechToText, useGetAudioSettings } from '~/hooks';
@@ -74,10 +74,24 @@ export default memo(function AudioRecorder({
     [setValue, speechToTextEndpoint],
   );
 
-  const { isListening, isLoading, startRecording, stopRecording } = useSpeechToText(
-    setText,
-    onTranscriptionComplete,
-  );
+  const { isListening, isLoading, startRecording, stopRecording, resetTranscript } =
+    useSpeechToText(setText, onTranscriptionComplete);
+  const stopRecordingRef = useRef(stopRecording);
+  const resetTranscriptRef = useRef(resetTranscript);
+  stopRecordingRef.current = stopRecording;
+  resetTranscriptRef.current = resetTranscript;
+
+  useEffect(() => {
+    if (!isSubmitting || isExternalSTT(speechToTextEndpoint)) {
+      return;
+    }
+
+    existingTextRef.current = '';
+    if (isListening) {
+      stopRecordingRef.current();
+    }
+    resetTranscriptRef.current();
+  }, [isSubmitting, isListening, speechToTextEndpoint]);
 
   if (!textAreaRef.current) {
     return null;
