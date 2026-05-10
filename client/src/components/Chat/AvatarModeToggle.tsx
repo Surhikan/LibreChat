@@ -3,6 +3,7 @@ import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { Bot } from 'lucide-react';
 import { Constants } from 'librechat-data-provider';
 import { TooltipAnchor } from '@librechat/client';
+import type { TConversation } from 'librechat-data-provider';
 import { useUpdateConversationMutation } from '~/data-provider';
 import { cn } from '~/utils';
 import store from '~/store';
@@ -19,8 +20,9 @@ function AvatarModeToggle() {
 
   const toggleAvatarMode = useCallback(async () => {
     const nextAvatarMode = !avatarMode;
+    const newConversationId = String(Constants.NEW_CONVO);
 
-    if (!conversationId || conversationId === Constants.NEW_CONVO) {
+    if (!conversationId || conversationId === newConversationId) {
       /*
       Avatar mode can be enabled before the first message.
       New chats do not exist server-side yet, so persist the flag locally
@@ -30,15 +32,17 @@ function AvatarModeToggle() {
         prevConversation
           ? {
               ...prevConversation,
-              conversationId: prevConversation.conversationId ?? Constants.NEW_CONVO,
+              conversationId: prevConversation.conversationId ?? newConversationId,
               avatarMode: nextAvatarMode,
             }
-          : {
-              conversationId: Constants.NEW_CONVO,
+          : ({
+              conversationId: newConversationId,
               endpoint: null,
               title: 'New Chat',
+              createdAt: '',
+              updatedAt: '',
               avatarMode: nextAvatarMode,
-            },
+            } satisfies TConversation),
       );
       return;
     }
