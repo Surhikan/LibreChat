@@ -633,6 +633,12 @@ export default function useEventHandlers({
             const update = {
               ...prevState,
               ...(conversation as TConversation),
+              /*
+              Preserve the submitted avatar mode preference across final SSE
+              conversation updates. Server-side conversation records can carry
+              the schema default `false` even when the current new-chat
+              submission was sent with avatar mode enabled.
+              */
               avatarMode:
                 submissionConvo.avatarMode ?? conversation.avatarMode ?? prevState?.avatarMode,
             };

@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { Bot } from 'lucide-react';
+import { Constants } from 'librechat-data-provider';
 import { TooltipAnchor } from '@librechat/client';
 import { useUpdateConversationMutation } from '~/data-provider';
 import { cn } from '~/utils';
@@ -11,16 +12,36 @@ function AvatarModeToggle() {
   const conversationId = conversation?.conversationId;
   const avatarMode = conversation?.avatarMode === true;
   const updateConvoMutation = useUpdateConversationMutation(conversationId ?? '');
+  const setConversation = useSetRecoilState(store.conversationByKeySelector(0));
   const updateConversation = useSetRecoilState(
-   store.updateConversationSelector(conversationId ?? ''),
+    store.updateConversationSelector(conversationId ?? ''),
   );
 
   const toggleAvatarMode = useCallback(async () => {
-    if (!conversationId) {
+    const nextAvatarMode = !avatarMode;
+
+    if (!conversationId || conversationId === Constants.NEW_CONVO) {
+      /*
+      Avatar mode can be enabled before the first message.
+      New chats do not exist server-side yet, so persist the flag locally
+      and let the first submission carry it in the conversation payload.
+      */
+      setConversation((prevConversation) =>
+        prevConversation
+          ? {
+              ...prevConversation,
+              conversationId: prevConversation.conversationId ?? Constants.NEW_CONVO,
+              avatarMode: nextAvatarMode,
+            }
+          : {
+              conversationId: Constants.NEW_CONVO,
+              endpoint: null,
+              title: 'New Chat',
+              avatarMode: nextAvatarMode,
+            },
+      );
       return;
     }
-
-    const nextAvatarMode = !avatarMode;
 
     await updateConvoMutation.mutateAsync({
       conversationId,
@@ -28,11 +49,7 @@ function AvatarModeToggle() {
     });
 
     updateConversation({ avatarMode: nextAvatarMode });
-  }, [avatarMode, conversationId, updateConvoMutation, updateConversation]);
-
-  if (!conversationId) {
-    return null;
-  }
+  }, [avatarMode, conversationId, setConversation, updateConvoMutation, updateConversation]);
 
   return (
     <TooltipAnchor
