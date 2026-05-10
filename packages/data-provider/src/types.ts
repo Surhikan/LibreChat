@@ -124,6 +124,11 @@ export type TPayload = Partial<TMessage> &
      * before the LLM turn runs.
      */
     manualSkills?: string[];
+    /*
+    Per-conversation avatar mode flag.
+    Used by backend runtime prompt handling.
+    */
+    avatarMode?: boolean;
   };
 
 export type TEditedContent =

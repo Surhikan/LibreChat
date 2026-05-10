@@ -16,7 +16,7 @@ export default function createPayload(submission: t.TSubmission) {
     endpointOption,
     manualSkills,
   } = submission;
-  const { conversationId } = s.tConvoUpdateSchema.parse(conversation);
+  const { conversationId, avatarMode } = s.tConvoUpdateSchema.parse(conversation);
   const { endpoint: _e, endpointType } = endpointOption as {
     endpoint: s.EModelEndpoint;
     endpointType?: s.EModelEndpoint;
@@ -39,6 +39,11 @@ export default function createPayload(submission: t.TSubmission) {
     isRegenerate,
     editedContent,
     conversationId,
+    /*
+    Passes the per-conversation avatar mode flag to the backend
+    so runtime prompt handling can adjust response style.
+    */
+    avatarMode,
     isContinued: !!(isEdited && isContinued),
     ephemeralAgent: s.isAssistantsEndpoint(endpoint) ? undefined : ephemeralAgent,
     manualSkills: s.isAssistantsEndpoint(endpoint) ? undefined : manualSkills,

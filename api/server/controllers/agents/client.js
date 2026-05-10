@@ -392,6 +392,21 @@ class AgentClient extends BaseClient {
         sharedRunContextParts.push(this.augmentedPrompt);
       }
     }
+    /*
+    Avatar mode is a per-conversation UI toggle.
+    When enabled, it nudges the agent toward shorter,
+    spoken, dialogue-friendly responses suitable for TTS/avatar output.
+    */
+    if (this.options?.req?.body?.avatarMode === true) {
+      sharedRunContextParts.push(
+       [
+         '# Avatar mode',
+         'Avatar mode is enabled for this conversation.',
+         'Reply in a shorter, spoken, dialogue-friendly style.',
+         'Prefer concise conversational turns over long structured answers unless the user explicitly asks for detail.',
+       ].join('\n'),
+      );
+    }
 
     /** Memory context (user preferences/memories) */
     const withoutKeys = await this.useMemory();
