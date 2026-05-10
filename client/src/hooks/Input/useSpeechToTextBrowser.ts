@@ -24,6 +24,8 @@ const useSpeechToTextBrowser = (
   const ignoredInterimTranscript = useRef<string | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>();
   const clearIgnoredRef = useRef<NodeJS.Timeout | null>();
+  const isBrowserSTTEnabledRef = useRef(isBrowserSTTEnabled);
+  const toggleListeningRef = useRef<() => void>(() => {});
   const [autoSendText] = useRecoilState(store.autoSendText);
   const [languageSTT] = useRecoilState<string>(store.languageSTT);
   const [autoTranscribeAudio] = useRecoilState<boolean>(store.autoTranscribeAudio);
@@ -37,6 +39,7 @@ const useSpeechToTextBrowser = (
     browserSupportsSpeechRecognition,
   } = useSpeechRecognition();
   const isListening = useMemo(() => listening, [listening]);
+  isBrowserSTTEnabledRef.current = isBrowserSTTEnabled;
 
   useEffect(() => {
     if (interimTranscript == null || interimTranscript === '') {
@@ -143,11 +146,12 @@ const useSpeechToTextBrowser = (
 
     startListening();
   };
+  toggleListeningRef.current = toggleListening;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.shiftKey && e.altKey && e.code === 'KeyL' && !isBrowserSTTEnabled) {
-        toggleListening();
+      if (e.shiftKey && e.altKey && e.code === 'KeyL' && isBrowserSTTEnabledRef.current) {
+        toggleListeningRef.current();
       }
     };
 
