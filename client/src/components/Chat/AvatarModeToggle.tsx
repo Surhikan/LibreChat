@@ -1,27 +1,34 @@
 import { useCallback } from 'react';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { Bot } from 'lucide-react';
 import { TooltipAnchor } from '@librechat/client';
 import { useUpdateConversationMutation } from '~/data-provider';
-import { useGetConversation } from '~/hooks';
 import { cn } from '~/utils';
+import store from '~/store';
 
 function AvatarModeToggle() {
-  const getConversation = useGetConversation(0);
-  const conversation = getConversation();
+  const conversation = useRecoilValue(store.conversationByKeySelector(0));
   const conversationId = conversation?.conversationId;
   const avatarMode = conversation?.avatarMode === true;
   const updateConvoMutation = useUpdateConversationMutation(conversationId ?? '');
+  const updateConversation = useSetRecoilState(
+   store.updateConversationSelector(conversationId ?? ''),
+  );
 
   const toggleAvatarMode = useCallback(async () => {
     if (!conversationId) {
       return;
     }
 
+    const nextAvatarMode = !avatarMode;
+
     await updateConvoMutation.mutateAsync({
       conversationId,
-      avatarMode: !avatarMode,
+      avatarMode: nextAvatarMode,
     });
-  }, [avatarMode, conversationId, updateConvoMutation]);
+
+    updateConversation({ avatarMode: nextAvatarMode });
+  }, [avatarMode, conversationId, updateConvoMutation, updateConversation]);
 
   if (!conversationId) {
     return null;
