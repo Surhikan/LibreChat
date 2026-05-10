@@ -307,7 +307,16 @@ export default function useEventHandlers({
 
       if (setConversation && !isAddedRequest) {
         setConversation((prevState) => {
-          const update = { ...prevState, ...convoUpdate };
+          /*
+          Preserve avatar mode across SSE conversation updates
+          that do not explicitly include the avatarMode field.
+          */
+          const update = {
+            ...prevState,
+            ...convoUpdate,
+            avatarMode: convoUpdate.avatarMode ?? prevState?.avatarMode,
+          };
+
           return update;
         });
       }
