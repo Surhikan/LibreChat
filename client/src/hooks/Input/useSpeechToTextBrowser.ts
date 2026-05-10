@@ -3,7 +3,6 @@ import { useRecoilState } from 'recoil';
 import { useToastContext } from '@librechat/client';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import { useGetCustomConfigSpeechQuery } from 'librechat-data-provider/react-query';
-import useGetAudioSettings from './useGetAudioSettings';
 import { useLocalize } from '~/hooks';
 import store from '~/store';
 
@@ -13,8 +12,6 @@ const useSpeechToTextBrowser = (
 ) => {
   const localize = useLocalize();
   const { showToast } = useToastContext();
-  const { speechToTextEndpoint } = useGetAudioSettings();
-  const isBrowserSTTEnabled = speechToTextEndpoint === 'browser';
   const { data: speechConfig } = useGetCustomConfigSpeechQuery({ enabled: true });
   const sttExternal = Boolean(speechConfig?.sttExternal);
 
@@ -24,8 +21,6 @@ const useSpeechToTextBrowser = (
   const ignoredInterimTranscript = useRef<string | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>();
   const clearIgnoredRef = useRef<NodeJS.Timeout | null>();
-  const isBrowserSTTEnabledRef = useRef(isBrowserSTTEnabled);
-  const toggleListeningRef = useRef<() => void>(() => {});
   const [autoSendText] = useRecoilState(store.autoSendText);
   const [languageSTT] = useRecoilState<string>(store.languageSTT);
   const [autoTranscribeAudio] = useRecoilState<boolean>(store.autoTranscribeAudio);
@@ -39,7 +34,6 @@ const useSpeechToTextBrowser = (
     browserSupportsSpeechRecognition,
   } = useSpeechRecognition();
   const isListening = useMemo(() => listening, [listening]);
-  isBrowserSTTEnabledRef.current = isBrowserSTTEnabled;
 
   useEffect(() => {
     if (interimTranscript == null || interimTranscript === '') {
@@ -137,27 +131,6 @@ const useSpeechToTextBrowser = (
   const stopListening = () => {
     SpeechRecognition.stopListening();
   };
-
-  const toggleListening = () => {
-    if (isListening === true) {
-      stopListening();
-      return;
-    }
-
-    startListening();
-  };
-  toggleListeningRef.current = toggleListening;
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.shiftKey && e.altKey && e.code === 'KeyL' && isBrowserSTTEnabledRef.current) {
-        toggleListeningRef.current();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   return {
     isListening,

@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useRecoilState } from 'recoil';
 import { useToastContext } from '@librechat/client';
 import { useSpeechToTextMutation } from '~/data-provider';
-import useGetAudioSettings from './useGetAudioSettings';
 import store from '~/store';
 
 const useSpeechToTextExternal = (
@@ -10,15 +9,13 @@ const useSpeechToTextExternal = (
   onTranscriptionComplete: (text: string) => void,
 ) => {
   const { showToast } = useToastContext();
-  const { speechToTextEndpoint } = useGetAudioSettings();
-  const isExternalSTTEnabled = speechToTextEndpoint === 'external';
   const audioStream = useRef<MediaStream | null>(null);
   const animationFrameIdRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   const audioChunksRef = useRef<Blob[]>([]);
-  const [permission, setPermission] = useState(false);
+  const [, setPermission] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isRequestBeingMade, setIsRequestBeingMade] = useState(false);
   const [audioMimeType, setAudioMimeType] = useState<string>(() => getBestSupportedMimeType());
@@ -241,42 +238,12 @@ const useSpeechToTextExternal = (
     stopRecording();
   };
 
-  const handleKeyDown = async (e: KeyboardEvent) => {
-    if (e.shiftKey && e.altKey && e.code === 'KeyL' && isExternalSTTEnabled) {
-      if (!window.MediaRecorder) {
-        showToast({ message: 'MediaRecorder is not supported in this browser', status: 'error' });
-        return;
-      }
-
-      if (permission === false) {
-        await getMicrophonePermission();
-      }
-
-      if (isListening) {
-        stopRecording();
-      } else {
-        startRecording();
-      }
-
-      e.preventDefault();
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isListening]);
-
   return {
     isListening,
     externalStopRecording,
     externalStartRecording,
     resetTranscript: () => {},
-    isLoading: isProcessing,
+    isLoading: isProcessing || isRequestBeingMade,
   };
 };
 
