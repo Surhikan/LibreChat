@@ -633,6 +633,7 @@ export default function useEventHandlers({
             const update = {
               ...prevState,
               ...(conversation as TConversation),
+              avatarMode: conversation.avatarMode ?? prevState?.avatarMode,
             };
             if (prevState?.model != null && prevState.model !== submissionConvo.model) {
               update.model = prevState.model;
