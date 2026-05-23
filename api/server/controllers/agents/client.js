@@ -401,13 +401,11 @@ class AgentClient extends BaseClient {
       sharedRunContextParts.push(
        [
          '# Avatar mode',
-         'Avatar mode is enabled for this conversation.',
-         'Reply in a shorter, spoken, dialogue-friendly style.',
-         'Prefer concise conversational turns over long structured answers unless the user explicitly asks for detail.',
+         'If the taru_avatar action/tool is available, call it once after writing the final assistant response, using exactly the visible assistant message as its text.',
          '',
-         'If the taru_avatar action/tool is available, call it once for every assistant response.',
-         'Send the final user-facing response in the text field.',
-         'You may also provide suitable emotion, mode, or state metadata when appropriate.',
+         'Reply concisely in a natural spoken style for TTS/avatar use.',
+         '',
+         'The visible assistant message is the single source of truth for speech. Do not create a separate TTS text, summary, or paraphrase.',
        ].join('\n'),
       );
     }
